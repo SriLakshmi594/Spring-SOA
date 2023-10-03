@@ -1,0 +1,40 @@
+ 1. Create a field on Account named "Number of Contacts". Populate this field with the number of contacts related to an account. 
+Solution :
+Create Number of Contacts field on Account Object
+Create a Trigger and it's handler
+
+Trigger:
+-------
+
+trigger contactTrigger on Contact (after insert,after delete) {
+    
+    ContactTriggerHandler c = new ContactTriggerHandler();
+    if(Trigger.isAfter && Trigger.isInsert){
+        c.countOfRelatedContacts(Trigger.new); 
+    }
+    
+    if(Trigger.isAfter && Trigger.isDelete)    {
+        c.countOfRelatedContacts(Trigger.old);    
+    }
+}
+
+Handler :
+--------
+
+public class ContactTriggerHandler {
+    
+    List<Account> accountList = new List<Account>();
+    List<Account> accountListUpdated = new List<Account>();
+    public void countOfRelatedContacts(List<Contact> newList)   {
+        for (Contact con : newList)  {
+            accountList = [SELECT Id,Name,Number_of_Contacts__c, (SELECT Id, Name FROM Contacts) 
+                           FROM Account WHERE Id =: con.AccountId];
+        }
+        for (Account acc : accountList)  {
+            acc.Number_of_Contacts__c = acc.Contacts.size() ;
+            accountListUpdated.add(acc);
+        }
+        update accountListUpdated;
+    }
+}
+

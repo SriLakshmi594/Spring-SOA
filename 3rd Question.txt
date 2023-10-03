@@ -1,0 +1,25 @@
+ 3. Make a basic http callout and print the result using system.debug
+
+https://postman-echo.com/get?foo1=bar1&foo2=bar2
+
+
+Apex Class:
+-----------
+
+public class BasicCallout {
+    Public static void calloutMethod(){
+        HttpRequest req = new HttpRequest();
+        HttpResponse res = new HttpResponse();
+        Http http = new Http();
+        
+        req.setEndpoint('https://postman-echo.com/get?foo1=bar1&foo2=bar2');
+        req.setMethod('GET');
+        
+        try{
+            res = http.send(req);
+            System.debug('Response Body' + res.getBody());
+        }catch(Exception e){
+            System.debug('Error:' +e.getMessage());
+        }
+    }
+}

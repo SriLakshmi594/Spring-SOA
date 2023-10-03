@@ -1,0 +1,66 @@
+ 2. Build a basic lightning component that can query a list of 10 most recently created accounts and display it using a lightning app. 
+Solution:
+
+Lighting Aura Component
+-----------------------
+
+<aura:component implements= "flexipage:availableForAllPageTypes" controller= "AccountController">
+    <aura:attribute name="accounts" type="Account[]"/>
+    <aura:handler name="init" value="{!this}" action="{!c.init}"/>
+    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+     <thead>
+    <tr class="slds-line-height_reset">
+      <th class="" scope="col">
+        <div class="slds-truncate" title="Account Id">Account Id</div>
+      </th>
+      <th class="" scope="col">
+        <div class="slds-truncate" title="Account Name">Account Name</div>
+      </th>
+         </tr>
+        </thead>
+        <tbody>
+    	<aura:iteration items="{!v.accounts}" var="account">
+            <tr><td>{!account.Id}</td>
+            <td>{!account.Name}</td></tr>
+        </aura:iteration>
+        </tbody>
+
+    </table>
+</aura:component>
+
+JS CODE :
+---------
+
+({
+	init: function(component, event, helper) {
+		var action = component.get("c.getRecentlyCreatedAccounts");
+        action.setCallback(this, function(response){
+            var state = response.getState();
+            if(state === "SUCCESS"){
+                component.set("v.accounts", response.getReturnValue());
+            }
+            else{
+                console.error("Error while fetching accounts:" + state);
+            }
+        });
+        $A.enqueueAction(action);
+	}
+})
+
+
+Apex Class:
+----------
+
+public class AccountController {
+	@AuraEnabled
+    public static List<Account> getRecentlyCreatedAccounts(){
+        return [SELECT Id, Name FROM Account ORDER BY CreatedDate DESC LIMIT 10];
+    }
+}
+
+Lightning App :
+---------------
+
+<aura:application extends="force:slds">
+    <c:RecentlyCreatedAccounts/>
+</aura:application>
